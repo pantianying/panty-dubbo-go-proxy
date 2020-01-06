@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/pantianying/dubbo-go-proxy/common/errcode"
+	"github.com/pantianying/dubbo-go-proxy/common/logger"
 	ct "github.com/pantianying/dubbo-go-proxy/context"
 	"github.com/pantianying/dubbo-go-proxy/filter"
 	"io"
@@ -28,7 +29,7 @@ func startHttpServer() {
 	err := srv.ListenAndServe()
 	if err != nil {
 		if err != http.ErrServerClosed {
-
+			logger.Errorf("http.ListenAndServe err:%v", err)
 		}
 	}
 }
