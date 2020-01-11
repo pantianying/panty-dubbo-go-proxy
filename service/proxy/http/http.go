@@ -1,10 +1,11 @@
 package http
 
 import (
+	"github.com/pantianying/dubbo-go-proxy/common/config"
 	"github.com/pantianying/dubbo-go-proxy/common/errcode"
 	"github.com/pantianying/dubbo-go-proxy/common/logger"
-	ct "github.com/pantianying/dubbo-go-proxy/context"
-	"github.com/pantianying/dubbo-go-proxy/filter"
+	"github.com/pantianying/dubbo-go-proxy/service"
+	ct "github.com/pantianying/dubbo-go-proxy/service/context"
 	"io"
 	"net/http"
 	"time"
@@ -19,7 +20,7 @@ func startHttpServer() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", commonhandle)
 	srv = http.Server{
-		Addr:           "",
+		Addr:           config.Config.HttpListenAddr,
 		Handler:        mux,
 		ReadTimeout:    20 * time.Second,
 		WriteTimeout:   20 * time.Second,
@@ -41,7 +42,7 @@ func commonhandle(w http.ResponseWriter, r *http.Request) {
 	var (
 		ret         int
 		responseStr string
-		ctx         = ct.NewhttpContext(w, r)
+		ctx         = ct.NewHttpContext(w, r)
 	)
 	defer func() {
 		responseStr = getRsp(ctx, ret)
@@ -49,19 +50,19 @@ func commonhandle(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, responseStr)
 
 	}()
-	filterName := ctx.NextFilterName()
-	for len(filterName) != 0 {
-		ret = filter.GetFilter(filterName).OnRequest(ctx)
+	filter := ctx.NextFilter()
+	for filter != nil {
+		ret = filter.OnRequest(ctx)
 		if ret != errcode.Success {
 			return
 		}
-		filterName = ctx.NextFilterName()
+		filter = ctx.NextFilter()
 	}
 	return
 
 }
 
-func getRsp(ctx ct.ProxyContext, ret int) string {
+func getRsp(ctx service.ProxyContext, ret int) string {
 	//todo 明确返回结构
 	return errcode.GetMsg(ret)
 }

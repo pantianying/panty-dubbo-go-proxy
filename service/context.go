@@ -1,4 +1,4 @@
-package context
+package service
 
 import (
 	"context"
@@ -6,27 +6,27 @@ import (
 
 type ProxyContext interface {
 	//base
-	NextFilterName() string
+	NextFilter() Filter
 
 	//your
 	//InterfaceName() string
 }
-type baseContext struct {
-	filter []string
+type BaseContext struct {
+	filter []Filter
 	ctx    context.Context
 }
 
-func NewBaseContext(filter []string) *baseContext {
-	return &baseContext{
+func NewBaseContext(filter []Filter) *BaseContext {
+	return &BaseContext{
 		filter: filter,
 		ctx:    context.Background(),
 	}
 }
-func (h *baseContext) NextFilterName() string {
+func (h *BaseContext) NextFilter() Filter {
 	if len(h.filter) > 0 {
 		f := h.filter[0]
 		h.filter = h.filter[1:]
 		return f
 	}
-	return ""
+	return nil
 }

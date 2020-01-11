@@ -3,20 +3,21 @@ package context
 import (
 	"github.com/pantianying/dubbo-go-proxy/common/constant"
 	"github.com/pantianying/dubbo-go-proxy/common/util"
+	"github.com/pantianying/dubbo-go-proxy/service"
 	"io/ioutil"
 	"net/http"
 )
 
 type httpContext struct {
-	*baseContext
+	*service.BaseContext
 	r       *http.Request
 	w       http.ResponseWriter
 	bodyMap map[string]interface{}
 }
 
-func NewhttpContext(w http.ResponseWriter, r *http.Request) ProxyContext {
+func NewHttpContext(w http.ResponseWriter, r *http.Request) service.ProxyContext {
 	ctx := &httpContext{
-		baseContext: NewBaseContext([]string{constant.CommonFilterName}),
+		BaseContext: service.NewBaseContext([]service.Filter{service.GetFilter(constant.CommonFilterName)}),
 		r:           r,
 		w:           w,
 		bodyMap:     make(map[string]interface{}),

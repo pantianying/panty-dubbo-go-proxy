@@ -1,13 +1,11 @@
-package filter
-
-import "github.com/pantianying/dubbo-go-proxy/context"
+package service
 
 var (
 	filters = make(map[string]func() Filter)
 )
 
 type Filter interface {
-	OnRequest(ctx context.ProxyContext) (ret int)
+	OnRequest(ctx ProxyContext) (ret int)
 }
 
 func SetFilter(name string, v func() Filter) {
