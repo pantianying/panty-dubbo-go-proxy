@@ -2,14 +2,19 @@ package service
 
 import (
 	"context"
+	"github.com/pantianying/dubbo-go-proxy/dubbo"
 )
 
 type ProxyContext interface {
 	//base
 	NextFilter() Filter
 
-	//your
-	//InterfaceName() string
+	Match() (*MetadataIdentifier, *MetadataInfo, int)
+
+	InvokeData() *dubbo.InvokeData
+
+	//SetInvokeResp()
+	//GetInvokeResp()
 }
 type BaseContext struct {
 	filter []Filter

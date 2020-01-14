@@ -1,16 +1,18 @@
 package errcode
 
+import "fmt"
+
 var (
-	Success        = 0
-	NoPatternMatch = 400
-	ServerBusy     = 500
+	Success    = 0
+	NotFind    = 404
+	ServerBusy = 500
 )
 var errorMap = map[int]string{
-	Success:        "success",
-	ServerBusy:     "server busy",
-	NoPatternMatch: "uri path invalid",
+	Success:    "success",
+	ServerBusy: "server busy",
+	NotFind:    "page not find",
 }
 
 func GetMsg(ret int) string {
-	return errorMap[ret]
+	return fmt.Sprintf(`{"code":%v,"msg":"%v"}`, ret, errorMap[ret])
 }

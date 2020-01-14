@@ -6,16 +6,8 @@ import (
 	"strings"
 )
 
-//var json = jsoniter.ConfigCompatibleWithStandardLibrary
-var json jsoniter.API
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-func init() {
-	json = jsoniter.Config{
-		EscapeHTML:             true,
-		SortMapKeys:            true,
-		ValidateJsonRawMessage: true,
-	}.Froze()
-}
 func InterfaceTOInterface(in interface{}, out interface{}) error {
 	b, e := json.Marshal(in)
 	if e != nil {

@@ -7,12 +7,18 @@ import (
 )
 
 var (
-	confConFile = "./conf/http-proxy.yml"
-	Config      *BaseConfig
+	confConFile = "./conf/proxy.yml"
+	Config      *ProxyConfig
 )
 
-type BaseConfig struct {
-	HttpListenAddr string `yaml:"httpListenAddr" default:"5s"`
+type ProxyConfig struct {
+	HttpListenAddr string `yaml:"http.addr" default:"5s"`
+
+	Retries               string `yaml:"dubbo.retries" default:"0"`
+	ResultFiledHumpToLine bool   `yaml:"dubbo.resultFiledHumpToLine" default:true`
+
+	RedisAddr     string `yaml:"redis.addr"`
+	RedisPassword string `yaml:"redis.password"`
 }
 
 func init() {
@@ -20,9 +26,10 @@ func init() {
 	if err != nil {
 		logger.Error("get config err", err)
 	}
-	Config = &BaseConfig{}
+	Config = &ProxyConfig{}
 	err = yaml.Unmarshal(confFileStream, Config)
 	if err != nil {
 		logger.Error("get config err", err)
 	}
+	logger.Debugf("read config :%+v", Config)
 }

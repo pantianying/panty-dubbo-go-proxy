@@ -4,21 +4,24 @@ import (
 	"github.com/pantianying/dubbo-go-proxy/common/config"
 	"github.com/pantianying/dubbo-go-proxy/common/errcode"
 	"github.com/pantianying/dubbo-go-proxy/common/logger"
+	"github.com/pantianying/dubbo-go-proxy/dubbo"
 	"github.com/pantianying/dubbo-go-proxy/service"
 	ct "github.com/pantianying/dubbo-go-proxy/service/context"
+	"github.com/pantianying/dubbo-go-proxy/service/metadata/redis"
 	"io"
 	"net/http"
 	"time"
 )
 
 var srv http.Server
+var mc = redis.NewRedisMetaDataCenter()
 
 func Run() {
 	startHttpServer()
 }
 func startHttpServer() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", commonhandle)
+	mux.HandleFunc("/", commonHandle)
 	srv = http.Server{
 		Addr:           config.Config.HttpListenAddr,
 		Handler:        mux,
@@ -34,9 +37,9 @@ func startHttpServer() {
 		}
 	}
 }
-func commonhandle(w http.ResponseWriter, r *http.Request) {
+func commonHandle(w http.ResponseWriter, r *http.Request) {
 	setJsHeader(w, r)
-	if r.Method == "OPTIONS" {
+	if r.Method == http.MethodOptions {
 		return
 	}
 	var (
@@ -58,12 +61,16 @@ func commonhandle(w http.ResponseWriter, r *http.Request) {
 		}
 		filter = ctx.NextFilter()
 	}
+	dubbo.Client.Call(*ctx.InvokeData())
 	return
 
 }
 
 func getRsp(ctx service.ProxyContext, ret int) string {
-	//todo 明确返回结构
+	if ret == errcode.Success {
+		//todo
+		return ""
+	}
 	return errcode.GetMsg(ret)
 }
 

@@ -1,5 +1,5 @@
 package constant
 
 const (
-	CommonFilterName = "CommonFilter"
+	MatchFilterName = "MatchFilter"
 )
