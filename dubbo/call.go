@@ -46,12 +46,12 @@ func dealResp(in interface{}, HumpToLine bool) (interface{}, error) {
 		if _, ok := in.(map[interface{}]interface{}); ok {
 			m := mapIItoMapSI(in)
 			if HumpToLine {
-				m = map2x_y(m)
+				m = humpToLine(m)
 			}
 			return m, nil
 		} else if inm, ok := in.(map[string]interface{}); ok {
 			if HumpToLine {
-				m := map2x_y(in)
+				m := humpToLine(in)
 				return m, nil
 			}
 			return inm, nil
@@ -76,6 +76,7 @@ func dealResp(in interface{}, HumpToLine bool) (interface{}, error) {
 	}
 	return in, nil
 }
+
 func mapIItoMapSI(in interface{}) interface{} {
 	var inMap = make(map[interface{}]interface{})
 	if v, ok := in.(map[interface{}]interface{}); !ok {
@@ -116,7 +117,9 @@ func mapIItoMapSI(in interface{}) interface{} {
 	}
 	return outMap
 }
-func map2x_y(in interface{}) interface{} {
+
+//traverse all the keys in the map and change the hump to underline
+func humpToLine(in interface{}) interface{} {
 
 	var m map[string]interface{}
 	if v, ok := in.(map[string]interface{}); ok {
@@ -132,17 +135,17 @@ func map2x_y(in interface{}) interface{} {
 		if v1 == nil {
 			out[x] = v1
 		} else if reflect.TypeOf(v1).Kind() == reflect.Struct {
-			out[x] = map2x_y(struct2Map(v1))
+			out[x] = humpToLine(struct2Map(v1))
 		} else if reflect.TypeOf(v1).Kind() == reflect.Slice {
 			value := reflect.ValueOf(v1)
 			var newTemps = make([]interface{}, 0, value.Len())
 			for i := 0; i < value.Len(); i++ {
-				newTemp := map2x_y(value.Index(i).Interface())
+				newTemp := humpToLine(value.Index(i).Interface())
 				newTemps = append(newTemps, newTemp)
 			}
 			out[x] = newTemps
 		} else if reflect.TypeOf(v1).Kind() == reflect.Map {
-			out[x] = map2x_y(v1)
+			out[x] = humpToLine(v1)
 		} else {
 			out[x] = v1
 		}

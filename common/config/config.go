@@ -12,7 +12,7 @@ var (
 )
 
 type ProxyConfig struct {
-	HttpListenAddr string `yaml:"http.addr" default:"5s"`
+	HttpListenAddr string `yaml:"http.addr"`
 
 	Retries               string `yaml:"dubbo.retries" default:"0"`
 	ResultFiledHumpToLine bool   `yaml:"dubbo.resultFiledHumpToLine" default:true`
@@ -24,12 +24,13 @@ type ProxyConfig struct {
 func init() {
 	confFileStream, err := ioutil.ReadFile(confConFile)
 	if err != nil {
-		logger.Error("get config err", err)
+		logger.Warn("get config err", err)
 	}
 	Config = &ProxyConfig{}
+	logger.Debug(string(confFileStream))
 	err = yaml.Unmarshal(confFileStream, Config)
 	if err != nil {
 		logger.Error("get config err", err)
 	}
-	logger.Debugf("read config :%+v", Config)
+	logger.Debugf("read config :%+v", *Config)
 }
