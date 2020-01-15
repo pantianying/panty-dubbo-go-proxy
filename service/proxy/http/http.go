@@ -4,8 +4,8 @@ import (
 	"github.com/pantianying/dubbo-go-proxy/common/config"
 	"github.com/pantianying/dubbo-go-proxy/common/errcode"
 	"github.com/pantianying/dubbo-go-proxy/common/logger"
+	"github.com/pantianying/dubbo-go-proxy/common/util"
 	"github.com/pantianying/dubbo-go-proxy/dubbo"
-	"github.com/pantianying/dubbo-go-proxy/service"
 	ct "github.com/pantianying/dubbo-go-proxy/service/context"
 	"github.com/pantianying/dubbo-go-proxy/service/metadata/redis"
 	"io"
@@ -44,14 +44,18 @@ func commonHandle(w http.ResponseWriter, r *http.Request) {
 	}
 	var (
 		ret         int
+		response    interface{}
+		err         error
 		responseStr string
 		ctx         = ct.NewHttpContext(w, r)
 	)
 	defer func() {
-		responseStr = getRsp(ctx, ret)
-		//返回结果
-		io.WriteString(w, responseStr)
-
+		// to http response
+		if ret == errcode.Success {
+			io.WriteString(w, responseStr)
+		} else {
+			io.WriteString(w, getErrRsp(ret))
+		}
 	}()
 	filter := ctx.NextFilter()
 	for filter != nil {
@@ -61,16 +65,18 @@ func commonHandle(w http.ResponseWriter, r *http.Request) {
 		}
 		filter = ctx.NextFilter()
 	}
-	dubbo.Client.Call(*ctx.InvokeData())
+	if response, ret = dubbo.Client.Call(*ctx.InvokeData()); ret != errcode.Success {
+		return
+	}
+	responseStr, err = util.StructToJsonString(response)
+	if err != nil {
+		ret = errcode.ServerBusy
+	}
 	return
 
 }
 
-func getRsp(ctx service.ProxyContext, ret int) string {
-	if ret == errcode.Success {
-		//todo
-		return ""
-	}
+func getErrRsp(ret int) string {
 	return errcode.GetMsg(ret)
 }
 

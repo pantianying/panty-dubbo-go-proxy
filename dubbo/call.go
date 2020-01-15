@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/pantianying/dubbo-go-proxy/common/config"
+	"github.com/pantianying/dubbo-go-proxy/common/errcode"
 	"github.com/pantianying/dubbo-go-proxy/common/logger"
 	"reflect"
 	"strings"
@@ -18,15 +19,18 @@ type InvokeData struct {
 	ReqData        []interface{}
 }
 
-func (d *GenericClientPool) Call(inData InvokeData) (resp interface{}, err error) {
+func (d *GenericClientPool) Call(inData InvokeData) (resp interface{}, ret int) {
+	var err error
 	c := d.Get(inData.InterfaceName, inData.Version, inData.Group)
 	resp, err = c.Invoke([]interface{}{inData.Method, inData.ParameterTypes, inData.ReqData})
 	if err != nil {
+		ret = errcode.ServerBusy
 		logger.Errorf("GenericClient call get err:%v, InvokeData:%+v", err, inData)
 		return
 	}
 	resp, err = dealResp(resp, config.Config.ResultFiledHumpToLine)
 	if err != nil {
+		ret = errcode.ServerBusy
 		logger.Errorf("deal resp err:%v", err)
 		return
 	}
