@@ -74,14 +74,18 @@ func (hc *httpContext) InvokeData() *dubbo.InvokeData {
 	if !ok {
 		return nil
 	}
-
+	reqData, ok := hc.getParamValues()
+	if !ok {
+		logger.Warn("get paramValues fail")
+		return nil
+	}
 	invokeData := &dubbo.InvokeData{
 		InterfaceName:  hc.mdKey.ServiceInterface,
 		Group:          hc.mdKey.Group,
 		Version:        hc.mdKey.Version,
 		Method:         method,
 		ParameterTypes: parameterTypes,
-		//ReqData:
+		ReqData:        reqData,
 	}
 	return invokeData
 }
@@ -104,7 +108,7 @@ func (hc *httpContext) getParameterTypes(method string) ([]string, bool) {
 	}
 	return nil, false
 }
-func (hc *httpContext) getReqData() ([]interface{}, bool) {
+func (hc *httpContext) getParamValues() ([]interface{}, bool) {
 	if paramValues, ok := hc.bodyMap["paramValues"]; ok {
 		reqData, ok := paramValues.([]interface{})
 		return reqData, ok
