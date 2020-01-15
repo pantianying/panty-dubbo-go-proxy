@@ -17,8 +17,9 @@ type ProxyConfig struct {
 	Retries               string `yaml:"dubbo.retries" default:"0"`
 	ResultFiledHumpToLine bool   `yaml:"dubbo.resultFiledHumpToLine" default:true`
 
-	RedisAddr     string `yaml:"redis.addr"`
-	RedisPassword string `yaml:"redis.password"`
+	UseRedisMetadataCenter bool   `yaml:"UseRedisMetadataCenter"`
+	RedisAddr              string `yaml:"redis.addr"`
+	RedisPassword          string `yaml:"redis.password"`
 }
 
 func init() {

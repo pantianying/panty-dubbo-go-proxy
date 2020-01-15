@@ -55,8 +55,13 @@ func (hc *httpContext) Match() (*service.MetadataIdentifier, *service.MetadataIn
 		Version:          version,
 		Group:            group,
 		Application:      application,
+		Side:             "provider",
 	}
-	hc.mdInfo = hc.metadataCenter.GetProviderMetaData(hc.mdKey)
+	if hc.metadataCenter == nil {
+		hc.mdInfo = nil
+	} else {
+		hc.mdInfo = hc.metadataCenter.GetProviderMetaData(hc.mdKey)
+	}
 	return hc.mdKey, hc.mdInfo, errcode.Success
 }
 func (hc *httpContext) InvokeData() *dubbo.InvokeData {
@@ -81,8 +86,7 @@ func (hc *httpContext) InvokeData() *dubbo.InvokeData {
 	return invokeData
 }
 func (hc *httpContext) getMethod() string {
-	//todo
-	return hc.bodyMap["method"].(string)
+	return hc.r.FormValue("method")
 }
 func (hc *httpContext) getParameterTypes(method string) ([]string, bool) {
 	//todo 优化
@@ -101,6 +105,9 @@ func (hc *httpContext) getParameterTypes(method string) ([]string, bool) {
 	return nil, false
 }
 func (hc *httpContext) getReqData() ([]interface{}, bool) {
-	//todo
+	if paramValues, ok := hc.bodyMap["paramValues"]; ok {
+		reqData, ok := paramValues.([]interface{})
+		return reqData, ok
+	}
 	return nil, false
 }

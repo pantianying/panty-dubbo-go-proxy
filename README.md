@@ -1,5 +1,48 @@
-### 以redis为元数据中心：
+### instructions
+ 
+#### HTTP request format when do not have metadata center:
 
+```
+{application Name}/​{Interface name}?version={version}&group={group}&method={method}
+```
+Group and version is the mapping data in Dubbo service. 
+
+http POST body: 
+
+```json
+{
+    "paramTypes" : ["org.apache.dubbo.demo.model.User"],
+    "paramValues": [
+        {
+            "id": 23,
+            "username": "testUser"
+        }
+    ]
+}
+```
+
+#### HTTP request format when  have metadata center:
+```
+{application Name}/​{Interface name}?version={version}&group={group}&method={method}
+```
+```json
+{
+    "paramValues": [
+        {
+            "id": 23,
+            "username": "testUser"
+        }
+    ]
+}
+
+```
+
+
+
+
+
+
+### 服务端配置元数据中心：
 
 添加依赖
 ```

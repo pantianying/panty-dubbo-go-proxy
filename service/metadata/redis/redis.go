@@ -12,22 +12,25 @@ import (
 var rc *redis.Client
 
 func init() {
-	rc = redis.NewClient(&redis.Options{
-		Addr:        config.Config.RedisAddr,
-		Password:    config.Config.RedisPassword,
-		PoolSize:    100,
-		MaxRetries:  3,
-		IdleTimeout: time.Second * 10,
-	})
-	go func() {
-		for {
-			_, err := rc.Ping().Result()
-			if err != nil {
-				logger.Errorf("redis ping err:%+v", err)
+	if config.Config.UseRedisMetadataCenter {
+		rc = redis.NewClient(&redis.Options{
+			Addr:        config.Config.RedisAddr,
+			Password:    config.Config.RedisPassword,
+			PoolSize:    100,
+			MaxRetries:  3,
+			IdleTimeout: time.Second * 10,
+		})
+		go func() {
+			for {
+				_, err := rc.Ping().Result()
+				if err != nil {
+					logger.Errorf("redis ping err:%+v", err)
+				}
+				time.Sleep(1 * time.Minute)
 			}
-			time.Sleep(1 * time.Minute)
-		}
-	}()
+		}()
+	}
+
 }
 
 type redisMetaDataCenter struct {
