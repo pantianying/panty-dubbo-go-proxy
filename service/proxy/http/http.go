@@ -17,6 +17,7 @@ var srv http.Server
 var mc = redis.NewRedisMetaDataCenter()
 
 func Run() {
+	dubbo.Client.Init()
 	startHttpServer()
 }
 func startHttpServer() {
@@ -65,7 +66,12 @@ func commonHandle(w http.ResponseWriter, r *http.Request) {
 		}
 		filter = ctx.NextFilter()
 	}
-	if response, ret = dubbo.Client.Call(*ctx.InvokeData()); ret != errcode.Success {
+	reqData := ctx.InvokeData()
+	if reqData == nil {
+		ret = errcode.ErrData
+		return
+	}
+	if response, ret = dubbo.Client.Call(*reqData); ret != errcode.Success {
 		return
 	}
 	responseStr, err = util.StructToJsonString(response)

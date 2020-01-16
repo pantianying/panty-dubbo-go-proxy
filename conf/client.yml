@@ -20,7 +20,7 @@ registries :
   "zk_1":
     protocol: "zookeeper"
     timeout	: "3s"
-    address: "10.0.200.5:2181"
+    address: "127.0.0.1:2181"
     username: ""
     password: ""
 references:

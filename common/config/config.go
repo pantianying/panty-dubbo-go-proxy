@@ -28,7 +28,6 @@ func init() {
 		logger.Warn("get config err", err)
 	}
 	Config = &ProxyConfig{}
-	logger.Debug(string(confFileStream))
 	err = yaml.Unmarshal(confFileStream, Config)
 	if err != nil {
 		logger.Error("get config err", err)

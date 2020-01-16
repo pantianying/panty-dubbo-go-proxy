@@ -16,24 +16,30 @@ type httpContext struct {
 	*service.BaseContext
 	r       *http.Request
 	w       http.ResponseWriter
-	bodyMap map[string]interface{}
+	bodyMap BodyMap
 
 	mdKey  *service.MetadataIdentifier
 	mdInfo *service.MetadataInfo
 
 	metadataCenter service.MetadataCenter
 }
+type BodyMap struct {
+	ParamTypes  []string
+	ParamValues []interface{}
+}
 
 func NewHttpContext(w http.ResponseWriter, r *http.Request) service.ProxyContext {
 	ctx := &httpContext{
 		BaseContext: service.NewBaseContext([]service.Filter{
 			service.GetFilter(constant.MatchFilterName)}),
-		r:       r,
-		w:       w,
-		bodyMap: make(map[string]interface{}),
+		r: r,
+		w: w,
 	}
 	if body, err := ioutil.ReadAll(r.Body); err == nil && len(body) > 0 {
 		err = util.ParseJsonByStruct(body, &ctx.bodyMap)
+		if err != nil {
+			logger.Warn("body to map[string]interface fail ", string(body))
+		}
 	}
 	return ctx
 }
@@ -43,11 +49,11 @@ func (hc *httpContext) Match() (*service.MetadataIdentifier, *service.MetadataIn
 		return hc.mdKey, hc.mdInfo, errcode.Success
 	}
 	ss := strings.Split(hc.r.URL.Path, "/")
-	if len(ss) < 2 {
+	if len(ss) < 3 {
 		return nil, nil, errcode.NotFind
 	}
-	application := ss[0]
-	serviceInterfaceName := ss[1]
+	application := ss[1]
+	serviceInterfaceName := ss[2]
 	group := hc.r.FormValue("group")
 	version := hc.r.FormValue("version")
 	hc.mdKey = &service.MetadataIdentifier{
@@ -72,6 +78,7 @@ func (hc *httpContext) InvokeData() *dubbo.InvokeData {
 	method := hc.getMethod()
 	parameterTypes, ok := hc.getParameterTypes(method)
 	if !ok {
+		logger.Warn("get parameterTypes fail")
 		return nil
 	}
 	reqData, ok := hc.getParamValues()
@@ -101,17 +108,16 @@ func (hc *httpContext) getParameterTypes(method string) ([]string, bool) {
 			}
 		}
 	}
+
 	// 元数据中获取不到从body中获取
-	if p, ok := hc.bodyMap["parameterTypes"]; ok {
-		parameterTypes, ok := p.([]string)
-		return parameterTypes, ok
+	if len(hc.bodyMap.ParamTypes) > 0 {
+		return hc.bodyMap.ParamTypes, true
 	}
 	return nil, false
 }
 func (hc *httpContext) getParamValues() ([]interface{}, bool) {
-	if paramValues, ok := hc.bodyMap["paramValues"]; ok {
-		reqData, ok := paramValues.([]interface{})
-		return reqData, ok
+	if len(hc.bodyMap.ParamValues) > 0 {
+		return hc.bodyMap.ParamValues, true
 	}
 	return nil, false
 }
